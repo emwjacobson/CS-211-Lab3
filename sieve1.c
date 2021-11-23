@@ -39,7 +39,7 @@ int main (int argc, char *argv[])
    }
 
    n = atoll(argv[1]);
-   /* Stop the timer */
+   
 
    /* Add you code here  */
    
@@ -53,7 +53,7 @@ int main (int argc, char *argv[])
 
 
 
-
+   /* Stop the timer */
    elapsed_time += MPI_Wtime();
 
 

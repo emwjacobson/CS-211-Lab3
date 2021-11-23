@@ -56,11 +56,17 @@ int main (int argc, char *argv[])
       well as the integers represented by the first and
       last array elements */
 
+
+
+   /* Add you code here  */
+
+
+
    /* Stop the timer */
 
    elapsed_time += MPI_Wtime();
 
-   /* Add you code here  */
+ 
 
 
 
