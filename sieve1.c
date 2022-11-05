@@ -4,6 +4,14 @@
 #include <stdlib.h>
 #define MIN(a,b)  ((a)<(b)?(a):(b))
 
+/*
+   module load mpich-3.2.1/gcc-4.8.5
+
+   cd build && make -j && cd ../script && ./submit.sh && cd ..
+   watch -n 1 squeue
+   cd script && ./data.sh && cd ..
+*/
+
 int main (int argc, char *argv[])
 {
    unsigned long int    count;        /* Local prime count */
