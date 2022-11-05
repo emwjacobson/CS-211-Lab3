@@ -39,18 +39,73 @@ int main (int argc, char *argv[])
    }
 
    n = atoll(argv[1]);
-   
 
-   /* Add you code here  */
-   
+   /* My Code Start */
 
+   low_value = 2 + id * (n - 1) / p;
+   high_value = 1 + (id + 1) * (n - 1) / p;
+   size = (high_value - low_value + 1) / 2; // We divide by 2 to remove the even elements
 
+   /* Bail out if all the primes used for sieving are
+      not all held by process 0 */
 
+   proc0_size = (n - 1) / p;
 
+   if ((2 + proc0_size) < (int) sqrt((double) n)) {
+      if (!id) printf("Too many processes\n");
+      MPI_Finalize();
+      exit(1);
+   }
 
+   /* Allocate this process's share of the array. */
 
+   marked = (char *) malloc(size);
 
+   if (marked == NULL) {
+      printf("Cannot allocate enough memory\n");
+      MPI_Finalize();
+      exit(1);
+   }
 
+   for (i = 0; i < size; i++)
+      marked[i] = 0;
+
+   if (!id) index = 0;
+
+   prime = 3; // Multiples of 2 are not included, start with 3
+
+   do {
+      if (prime * prime > low_value) {
+         first = prime * prime - low_value;
+      } else {
+         if (!(low_value % prime))
+            first = 0;
+         else
+            first = prime - (low_value % prime);
+      }
+
+      for (i = first; i < size; i += 2*prime) // Increment by 2*prime, as otherwise we will hit an even element every other time
+         marked[i/2 - 3] = 1;
+
+      if (!id) {
+         while (marked[++index]);
+         prime = index*2 + 3;
+      }
+
+      if (p > 1)
+         MPI_Bcast(&prime, 1, MPI_INT, 0, MPI_COMM_WORLD);
+   } while (prime * prime <= n);
+
+   count = 0;
+
+   for (i = 0; i < size; i++)
+      if (!marked[i])
+         count++;
+
+   if (p > 1)
+      MPI_Reduce(&count, &global_count, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+   /* My Code End */
 
 
    /* Stop the timer */
