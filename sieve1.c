@@ -4,6 +4,10 @@
 #include <stdlib.h>
 #define MIN(a,b)  ((a)<(b)?(a):(b))
 
+// A prettier way of identifying which processor prints what
+// #define pprintf(id, str, ...) printf("Proc %i: " str, id, __VA_ARGS__)
+#define pprintf(id, str, ...)
+
 /*
    module load mpich-3.2.1/gcc-4.8.5
 
@@ -51,12 +55,10 @@ int main (int argc, char *argv[])
    /* My Code Start */
 
    low_value = 3 + id * (n - 2) / p;
-   if (low_value % 2 == 0) // Even
-      low_value++;
+   if (low_value % 2 == 0) low_value++;
    high_value = 2 + (id + 1) * (n - 2) / p;
-   if (high_value % 2 == 0) // Even
-      high_value--;
-   size = (high_value - low_value + 1) / 2 + 1; // We divide by 2 to remove the even elements
+   if (high_value % 2 == 0) high_value--;
+   size = (high_value - low_value + 1)/2 + 1; // We divide by 2 to remove the even elements
 
    /* Bail out if all the primes used for sieving are
       not all held by process 0 */
@@ -74,7 +76,7 @@ int main (int argc, char *argv[])
                   if (i%2 == 1) num_odd++; // Count the number of odd numbers
                }
 
-               printf("Proc %i low: %i, high: %i, size: %i, num odd: %i\n", id, low_value, high_value, size, num_odd);
+               pprintf(id, "low: %i, high: %i, size: %i, num odd: %i\n", low_value, high_value, size, num_odd);
 
    /* Allocate this process's share of the array. */
 
@@ -93,36 +95,44 @@ int main (int argc, char *argv[])
 
    prime = 3; // Multiples of 2 are not included, start with 3
 
-   // do {
-   //    if (prime * prime > low_value) {
-   //       first = (prime * prime - low_value)/2;
-   //    } else {
-   //       if (!(low_value % prime))
-   //          first = 0;
-   //       else
-   //          first = prime - (low_value % prime);
-   //    }
+   do {
+      if (prime*prime > low_value) { // If we need to start indexing from the middle of the array (as opposed to from around the front)
+         first = (prime*prime - low_value) / 2; // Get index mid-array of first prime^2
+      } else {
+         if (!(low_value % prime)) { // If the low_value is a product of the prime, then were good! Easy case!
+            first = 0;
+         } else {
+            int temp = prime - (low_value % prime); // p, p-1, p-2, ..., 1
+            if ((low_value + temp) % 2 == 1) { // If we would end up on our multiple, and it is already odd, then good!
+               first = temp/2;
+            } else { // Otherwise, if the next multiple and its even, then we need the next one
+               first = (temp + prime)/2;
+            }
+         }
+      }
+      // pprintf(id, "Prime: %i, First: %i\n", prime, first);
 
-      // for (i = first; i < size; i += 2*prime) // Increment by 2*prime, as otherwise we will hit an even element every other time
-      //    marked[i/2 - 3] = 1;
+      for (i = first; i < size; i += prime) // Increment by
+         marked[i] = 1;
 
-      // if (!id) {
-      //    while (marked[++index]);
-      //    prime = index*2 + 3;
-      // }
+      if (!id) {
+         while (marked[++index]);
+         prime = index*2 + 3;
+      }
 
-      // if (p > 1)
-      //    MPI_Bcast(&prime, 1, MPI_INT, 0, MPI_COMM_WORLD);
-   // } while (prime * prime <= n);
+      if (p > 1)
+         MPI_Bcast(&prime, 1, MPI_INT, 0, MPI_COMM_WORLD);
+   } while (prime * prime <= n);
 
-   // count = 0;
+   count = 0;
+   for (i = 0; i < size; i++)
+      if (!marked[i])
+         count++;
 
-   // for (i = 0; i < size; i++)
-   //    if (!marked[i])
-   //       count++;
+   if (p > 1)
+      MPI_Reduce(&count, &global_count, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
-   // if (p > 1)
-   //    MPI_Reduce(&count, &global_count, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+   global_count++; // We need to account for 2! Poor guy... lost but not forgotten.
 
    /* My Code End */
 
@@ -133,9 +143,9 @@ int main (int argc, char *argv[])
 
    /* Print the results */
 
-   // if (!id) {
-   //    printf("The total number of prime: %ld, total time: %10.6f, total node %d\n", global_count, elapsed_time, p);
-   // }
+   if (!id) {
+      printf("The total number of prime: %ld, total time: %10.6f, total node %d\n", global_count, elapsed_time, p);
+   }
 
    MPI_Finalize ();
    return 0;
