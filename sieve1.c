@@ -50,9 +50,13 @@ int main (int argc, char *argv[])
 
    /* My Code Start */
 
-   low_value = 2 + id * (n - 1) / p;
-   high_value = 1 + (id + 1) * (n - 1) / p;
-   size = (high_value - low_value + 1) / 2; // We divide by 2 to remove the even elements
+   low_value = 3 + id * (n - 2) / p;
+   if (low_value % 2 == 0) // Even
+      low_value++;
+   high_value = 2 + (id + 1) * (n - 2) / p;
+   if (high_value % 2 == 0) // Even
+      high_value--;
+   size = (high_value - low_value + 1) / 2 + 1; // We divide by 2 to remove the even elements
 
    /* Bail out if all the primes used for sieving are
       not all held by process 0 */
@@ -64,6 +68,13 @@ int main (int argc, char *argv[])
       MPI_Finalize();
       exit(1);
    }
+
+               int num_odd = 0;
+               for(i=low_value; i<=high_value; i++) {
+                  if (i%2 == 1) num_odd++; // Count the number of odd numbers
+               }
+
+               printf("Proc %i low: %i, high: %i, size: %i, num odd: %i\n", id, low_value, high_value, size, num_odd);
 
    /* Allocate this process's share of the array. */
 
@@ -82,36 +93,36 @@ int main (int argc, char *argv[])
 
    prime = 3; // Multiples of 2 are not included, start with 3
 
-   do {
-      if (prime * prime > low_value) {
-         first = prime * prime - low_value;
-      } else {
-         if (!(low_value % prime))
-            first = 0;
-         else
-            first = prime - (low_value % prime);
-      }
+   // do {
+   //    if (prime * prime > low_value) {
+   //       first = (prime * prime - low_value)/2;
+   //    } else {
+   //       if (!(low_value % prime))
+   //          first = 0;
+   //       else
+   //          first = prime - (low_value % prime);
+   //    }
 
-      for (i = first; i < size; i += 2*prime) // Increment by 2*prime, as otherwise we will hit an even element every other time
-         marked[i/2 - 3] = 1;
+      // for (i = first; i < size; i += 2*prime) // Increment by 2*prime, as otherwise we will hit an even element every other time
+      //    marked[i/2 - 3] = 1;
 
-      if (!id) {
-         while (marked[++index]);
-         prime = index*2 + 3;
-      }
+      // if (!id) {
+      //    while (marked[++index]);
+      //    prime = index*2 + 3;
+      // }
 
-      if (p > 1)
-         MPI_Bcast(&prime, 1, MPI_INT, 0, MPI_COMM_WORLD);
-   } while (prime * prime <= n);
+      // if (p > 1)
+      //    MPI_Bcast(&prime, 1, MPI_INT, 0, MPI_COMM_WORLD);
+   // } while (prime * prime <= n);
 
-   count = 0;
+   // count = 0;
 
-   for (i = 0; i < size; i++)
-      if (!marked[i])
-         count++;
+   // for (i = 0; i < size; i++)
+   //    if (!marked[i])
+   //       count++;
 
-   if (p > 1)
-      MPI_Reduce(&count, &global_count, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+   // if (p > 1)
+   //    MPI_Reduce(&count, &global_count, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
    /* My Code End */
 
@@ -122,10 +133,10 @@ int main (int argc, char *argv[])
 
    /* Print the results */
 
-   if (!id) {
-      printf("The total number of prime: %ld, total time: %10.6f, total node %d\n", global_count, elapsed_time, p);
+   // if (!id) {
+   //    printf("The total number of prime: %ld, total time: %10.6f, total node %d\n", global_count, elapsed_time, p);
+   // }
 
-   }
    MPI_Finalize ();
    return 0;
 }
