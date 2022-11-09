@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #define MIN(a,b)  ((a)<(b)?(a):(b))
 
-// A prettier way of identifying which processor prints what
+// A prettier way of identifying which processor prints what, can be defined to print nothing when final compilation is needed
 // #define pprintf(id, str, ...) printf("Proc %i: " str, id, __VA_ARGS__)
 #define pprintf(id, str, ...)
 
@@ -55,9 +55,9 @@ int main (int argc, char *argv[])
    /* My Code Start */
 
    low_value = 3 + id * (n - 2) / p;
-   if (low_value % 2 == 0) low_value++;
+   if (low_value % 2 == 0) low_value++; // If the low number is an even number, bump it up to make it odd
    high_value = 2 + (id + 1) * (n - 2) / p;
-   if (high_value % 2 == 0) high_value--;
+   if (high_value % 2 == 0) high_value--; // If the high number is even, bump it down to make it odd.
    size = (high_value - low_value + 1)/2 + 1; // We divide by 2 to remove the even elements
 
    /* Bail out if all the primes used for sieving are
@@ -71,12 +71,12 @@ int main (int argc, char *argv[])
       exit(1);
    }
 
-               int num_odd = 0;
-               for(i=low_value; i<=high_value; i++) {
-                  if (i%2 == 1) num_odd++; // Count the number of odd numbers
-               }
-
-               pprintf(id, "low: %i, high: %i, size: %i, num odd: %i\n", low_value, high_value, size, num_odd);
+   // Some debugging stuff
+   // int num_odd = 0;
+   // for(i=low_value; i<=high_value; i++) {
+   //    if (i%2 == 1) num_odd++; // Count the number of odd numbers
+   // }
+   // pprintf(id, "low: %i, high: %i, size: %i, num odd: %i\n", low_value, high_value, size, num_odd);
 
    /* Allocate this process's share of the array. */
 
@@ -110,9 +110,11 @@ int main (int argc, char *argv[])
             }
          }
       }
-      // pprintf(id, "Prime: %i, First: %i\n", prime, first);
+      pprintf(id, "Prime: %i, First: %i\n", prime, first);
 
-      for (i = first; i < size; i += prime) // Increment by
+      // These lines are more-or-less the same as the original,
+      // outside of playing with the indexing when finding the next prime.
+      for (i = first; i < size; i += prime) // Increment by prime
          marked[i] = 1;
 
       if (!id) {
