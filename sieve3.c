@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #define MIN(a,b)  ((a)<(b)?(a):(b))
 
-#define BATCH_SIZE 1000000
+#define BATCH_SIZE 500000
 
 #define MONITOR_PROC 0
 

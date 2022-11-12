@@ -7,4 +7,4 @@
 
 module load mpich-3.2.1/gcc-4.8.5
 
-mpirun -np 7 ./build/sieve1 10000 &> output.txt
+mpirun -np 9 ./build/sieve3 10000000 &> output.txt
