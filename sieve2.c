@@ -48,7 +48,6 @@ unsigned long int * primes_up_to(int max_num, unsigned long int *num_primes) {
    index = 0;
 
    do {
-      // pprintf(-1, "Prime: %i\n", prime);
       first = (prime*prime - 3) / 2;
 
       for(i=first; i<size; i+=prime)
@@ -116,11 +115,6 @@ int main (int argc, char *argv[])
 
    n = atoll(argv[1]);
 
-   /* Figure out this process's share of the array, as
-      well as the integers represented by the first and
-      last array elements */
-
-
    /* My Code Start */
 
    low_value = 3 + id * (n - 2) / p;
@@ -152,8 +146,6 @@ int main (int argc, char *argv[])
 
    for (i = 0; i < size; i++)
       marked[i] = 0;
-
-   if (!id) index = 0;
 
    unsigned long int num_primes;
    unsigned long int *sprimes = primes_up_to(sqrt(n), &num_primes); // num_primes will be set to the number of primes found, starting at 3
